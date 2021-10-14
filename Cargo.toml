@@ -1,0 +1,10 @@
+[package]
+name = "gsv-culture-ships"
+version = "0.1.0"
+edition = "2018"
+description = "Iain M. Banks's Culture ship names in a library."
+readme = "README.md"
+license = "BlueOak-1.0.0"
+
+[dependencies]
+rand = "0.8.4"
