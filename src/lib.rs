@@ -1,11 +1,11 @@
 //! In case you ever needed Iain M. Banks's Culture ship names as a service. Names sourced from the
 //! pleasingly extensive [Wikipedia article](https://en.wikipedia.org/wiki/List_of_spacecraft_in_the_Culture_series)
-//!  listing them. Sadly a closed set.
+//! listing them, with a handful of additions.
 
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
-const SHIPS: [&str; 169] = [
+const SHIPS: [&str; 172] = [
     "(D)GOU Limiting Factor",
     "(D)ROU Zealot",
     "(ex-)GCU Smile Tolerantly",
@@ -33,6 +33,7 @@ const SHIPS: [&str; 169] = [
     "GCU Different Tan",
     "GCU Displacement Activity",
     "GCU Dramatic Exit",
+    "GCU Due to the Intimate Nature of the Hoagie Room",
     "GCU Excuses And Accusations",
     "GCU Experiencing A Significant Gravitas Shortfall",
     "GCU Fate Amenable To Change",
@@ -50,6 +51,7 @@ const SHIPS: [&str; 169] = [
     "GCU It's My Party And I'll Sing If I Want To",
     "GCU Jaundiced Outlook",
     "GCU Just Another Victim Of The Ambient Morality",
+    "GCU Just One More Thing…",
     "GCU Just Read The Instructions",
     "GCU Just Testing",
     "GCU Lightly Seared On The Reality Grill",
@@ -173,6 +175,7 @@ const SHIPS: [&str; 169] = [
     "VFP/(D)LOU Rapid Random Response Unit",
     "VFP/(D)ROU Outstanding Contribution To The Historical Process",
     "VFP/(D)ROU Resistance Is Character-Forming",
+    "VFP/(D)ROU Sausage-making Is An Outcome Of Efficient Butchery",
     "VFP/(D)ROU Xenophobe",
     "VFP/(D)ROU You'll Clean That Up Before You Leave",
 ];
