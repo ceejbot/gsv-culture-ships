@@ -1,10 +1,13 @@
 [package]
 name = "gsv-culture-ships"
 version = "0.2.0"
-edition = "2018"
+edition = "2021"
 description = "Iain M. Banks's Culture ship names in a library."
 readme = "README.md"
 license = "BlueOak-1.0.0"
+authors = ["C J Silverio <ceejceej@gmail.com>"]
+repository = "https://github.com/ceejbot/gsv-culture-ships"
+keywords = ["culture ships", "iain m. banks"]
 
 [dependencies]
 rand = "0.8.5"
