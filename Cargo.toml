@@ -7,6 +7,7 @@ readme = "README.md"
 license = "BlueOak-1.0.0"
 authors = ["C J Silverio <ceejceej@gmail.com>"]
 repository = "https://github.com/ceejbot/gsv-culture-ships"
+rust-version = "1.56.1"
 
 [dependencies]
 rand = "0.8.5"
