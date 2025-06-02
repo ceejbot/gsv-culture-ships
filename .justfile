@@ -38,7 +38,4 @@ version BUMP:
 
 # Publish to crates.io.
 release:
-	#!/usr/bin/env bash
-	set -e
-
-	cargo publish --dry-run
+	cargo publish
