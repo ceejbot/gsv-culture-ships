@@ -2,8 +2,7 @@
 //! pleasingly extensive [Wikipedia article](https://en.wikipedia.org/wiki/List_of_spacecraft_in_the_Culture_series)
 //! listing them, with a handful of additions.
 
-use rand::prelude::SliceRandom;
-use rand::thread_rng;
+use rand::prelude::IndexedRandom;
 
 const SHIPS: [&str; 172] = [
     "(D)GOU Limiting Factor",
@@ -185,12 +184,22 @@ pub fn ships() -> Vec<String> {
     SHIPS.iter().map(|xs| xs.to_string()).collect()
 }
 
+/// Return all ship names as a slice of &str. Will not allocate.
+pub fn ships_as_slice() -> &'static [&'static str] {
+    SHIPS.as_slice()
+}
+
 /// Return a randomly-selected ship name.
 pub fn random() -> String {
-    let mut rng = thread_rng();
+    random_str().to_string()
+}
+
+/// Return a randomly-selected ship name, as a static &str.
+pub fn random_str() -> &'static str {
+    let mut rng = rand::rng();
     match SHIPS.choose(&mut rng) {
-        Some(ship) => ship.to_string(),
-        None => "GSV Zero Gravitas".to_string(),
+        Some(ship) => ship,
+        None => "GSV Zero Gravitas",
     }
 }
 
@@ -206,6 +215,18 @@ mod tests {
     #[test]
     fn all_ships() {
         let list = super::ships();
+        assert_eq!(list.len(), super::SHIPS.len());
+    }
+
+    #[test]
+    fn random_ship_borrowed() {
+        let ship: &'static str = super::random_str();
+        assert!(!ship.is_empty());
+    }
+
+    #[test]
+    fn all_ships_borrowed() {
+        let list: &'static [&str] = super::ships_as_slice();
         assert_eq!(list.len(), super::SHIPS.len());
     }
 }
