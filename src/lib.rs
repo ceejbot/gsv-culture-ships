@@ -1,8 +1,13 @@
 //! In case you ever needed Iain M. Banks's Culture ship names as a service. Names sourced from the
 //! pleasingly extensive [Wikipedia article](https://en.wikipedia.org/wiki/List_of_spacecraft_in_the_Culture_series)
 //! listing them, with a handful of additions.
-
-use rand::prelude::IndexedRandom;
+//!
+//! # Examples
+//!
+//! ```
+//! let ship = gsv_culture_ships::random();
+//! println!("Out-of-context problem observed by {}.", ship);
+//! ```
 
 const SHIPS: [&str; 172] = [
     "(D)GOU Limiting Factor",
@@ -180,27 +185,82 @@ const SHIPS: [&str; 172] = [
 ];
 
 /// Return all ship names as a vector of strings. Will allocate.
+///
+/// # Examples
+///
+/// ```
+/// let all_ships = gsv_culture_ships::ships();
+/// assert_eq!(all_ships.len(), 172);
+/// ```
+#[must_use]
 pub fn ships() -> Vec<String> {
     SHIPS.iter().map(|xs| xs.to_string()).collect()
 }
 
 /// Return all ship names as a slice of &str. Will not allocate.
-pub fn ships_as_slice() -> &'static [&'static str] {
+///
+/// # Examples
+///
+/// ```
+/// let ships = gsv_culture_ships::ships_as_slice();
+/// assert!(ships.contains(&"GSV Zero Gravitas"));
+/// ```
+#[must_use]
+pub const fn ships_as_slice() -> &'static [&'static str] {
     SHIPS.as_slice()
 }
 
 /// Return a randomly-selected ship name.
+///
+/// # Examples
+///
+/// ```
+/// let ship = gsv_culture_ships::random();
+/// assert!(!ship.is_empty());
+/// ```
+#[must_use]
 pub fn random() -> String {
     random_str().to_string()
 }
 
 /// Return a randomly-selected ship name, as a static &str.
+///
+/// ```
+/// let ship = gsv_culture_ships::random_str();
+/// assert!(!ship.is_empty());
+/// ```
+#[must_use]
 pub fn random_str() -> &'static str {
-    let mut rng = rand::rng();
-    match SHIPS.choose(&mut rng) {
-        Some(ship) => ship,
-        None => "GSV Zero Gravitas",
-    }
+    let index = fastrand::usize(..SHIPS.len());
+    SHIPS[index]
+}
+
+/// Return multiple randomly-selected unique ship names.
+///
+/// Returns up to `count` ships. If `count` exceeds the total number of ships,
+/// returns all available ships.
+///
+/// ```
+/// let ships = gsv_culture_ships::random_n(3);
+/// assert!(ships.len() <= 3);
+/// ```
+#[must_use]
+pub fn random_n(count: usize) -> Vec<String> {
+    let count = count.min(SHIPS.len());
+    let mut indices = (0..SHIPS.len()).collect::<Vec<_>>();
+    fastrand::shuffle(&mut indices);
+    indices.into_iter().take(count).map(|i| SHIPS[i].to_string()).collect()
+}
+
+/// Returns the total number of available ship names.
+///
+/// ```
+/// let count = gsv_culture_ships::count();
+/// assert_eq!(count, 172);
+/// ```
+#[must_use]
+pub const fn count() -> usize {
+    SHIPS.len()
 }
 
 #[cfg(test)]
@@ -228,5 +288,26 @@ mod tests {
     fn all_ships_borrowed() {
         let list: &'static [&str] = super::ships_as_slice();
         assert_eq!(list.len(), super::SHIPS.len());
+    }
+
+    #[test]
+    fn random_multiple() {
+        let ships = super::random_n(5);
+        assert!(ships.len() <= 5);
+        // Check uniqueness
+        let unique: std::collections::HashSet<_> = ships.iter().collect();
+        assert_eq!(unique.len(), ships.len());
+    }
+
+    #[test]
+    fn random_n_exceeds_total() {
+        let ships = super::random_n(1000);
+        assert_eq!(ships.len(), super::SHIPS.len());
+    }
+
+    #[test]
+    fn count_ships() {
+        assert_eq!(super::count(), 172);
+        assert_eq!(super::count(), super::SHIPS.len());
     }
 }

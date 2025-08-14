@@ -1,4 +1,4 @@
-BINNAME := "codefact"
+BINNAME := "culture-ship"
 RELATIVE_TAP_PATH := "../../../homebrew-tap/"
 
 _help:
@@ -11,11 +11,13 @@ test:
 # Run the same checks we run in CI. Requires nightly.
 ci: test
 	cargo clippy
-	cargo +nightly fmt
+	cargo +nightly fmt --check
 
-# Ask for clippy's opinion.
-lint:
+# Format and fix lints.
+lint: fmt
 	cargo clippy --fix
+
+fmt:
 	cargo +nightly fmt
 
 # Install required tools

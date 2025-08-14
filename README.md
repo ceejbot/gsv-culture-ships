@@ -9,6 +9,13 @@ let shipname = gsv_culture_ships::random();
 println!("Out-of-context problem observed by {}.", shipname);
 ```
 
+If you are using the cli bin:
+
+```text
+>  culture-ship
+GSV Unreliable Witness
+```
+
 ## See also
 
 [Javascript](https://github.com/ceejbot/culture-ships) and [golang](https://github.com/ceejbot/vfp-culture-ships) variations.
