@@ -7,10 +7,12 @@ _help:
 # Run all tests using nextest.
 test:
 	cargo nextest run
+	cargo nextest run --features noncanonical
 
 # Run the same checks we run in CI. Requires nightly.
 ci: test
 	cargo clippy
+	cargo clippy --features noncanonical
 	cargo +nightly fmt --check
 
 # Format and fix lints.
@@ -31,7 +33,7 @@ version BUMP:
 	#!/usr/bin/env bash
 	set -e
 	current=$(tomato get package.version Cargo.toml)
-	version=$(echo "$current" | semver-bump {{BUMP}})
+	version=$(semver-bump {{BUMP}} "$current")
 	tomato set package.version "$version" Cargo.toml &> /dev/null
 	cargo generate-lockfile
 	git commit Cargo.toml Cargo.lockfile -m "v${version}"

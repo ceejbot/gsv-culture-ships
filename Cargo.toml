@@ -15,5 +15,8 @@ categories = ["command-line-utilities"]
 name = "culture-ship"
 path = "src/bin/culture-ship.rs"
 
+[features]
+noncanonical = []
+
 [dependencies]
 fastrand = "2.1"

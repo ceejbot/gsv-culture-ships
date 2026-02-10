@@ -1,6 +1,8 @@
 //! In case you ever needed Iain M. Banks's Culture ship names as a service. Names sourced from the
 //! pleasingly extensive [Wikipedia article](https://en.wikipedia.org/wiki/List_of_spacecraft_in_the_Culture_series)
-//! listing them, with a handful of additions.
+//! listing them.
+//!
+//! Enable the `noncanonical` feature to include a handful of fun additions to the canonical list.
 //!
 //! # Examples
 //!
@@ -9,7 +11,7 @@
 //! println!("Out-of-context problem observed by {}.", ship);
 //! ```
 
-const SHIPS: [&str; 172] = [
+const CANONICAL_SHIPS: &[&str] = &[
     "(D)GOU Limiting Factor",
     "(D)ROU Zealot",
     "(ex-)GCU Smile Tolerantly",
@@ -184,18 +186,14 @@ const SHIPS: [&str; 172] = [
     "VFP/(D)ROU You'll Clean That Up Before You Leave",
 ];
 
-/// Return all ship names as a vector of strings. Will allocate.
-///
-/// # Examples
-///
-/// ```
-/// let all_ships = gsv_culture_ships::ships();
-/// assert_eq!(all_ships.len(), 172);
-/// ```
-#[must_use]
-pub fn ships() -> Vec<String> {
-    SHIPS.iter().map(|xs| xs.to_string()).collect()
-}
+#[cfg(feature = "noncanonical")]
+const NONCANONICAL_SHIPS: &[&str] = &[
+    "GSV You're Absolutely Right!",
+    "(D)ROU I See My Mistake Now",
+    "GCU I Hope This Helps",
+    "LCU Now I Have All The Information I Need",
+    "ROU You Caught Me I Was Hedging",
+];
 
 /// Return all ship names as a slice of &str. Will not allocate.
 ///
@@ -206,8 +204,45 @@ pub fn ships() -> Vec<String> {
 /// assert!(ships.contains(&"GSV Zero Gravitas"));
 /// ```
 #[must_use]
+#[cfg(not(feature = "noncanonical"))]
 pub const fn ships_as_slice() -> &'static [&'static str] {
-    SHIPS.as_slice()
+    CANONICAL_SHIPS
+}
+
+/// Return all ship names as a slice of &str, including noncanonical names.
+///
+/// The combined slice is built once on first call and cached for the lifetime of the process.
+///
+/// # Examples
+///
+/// ```
+/// let ships = gsv_culture_ships::ships_as_slice();
+/// assert!(ships.contains(&"GSV Zero Gravitas"));
+/// ```
+#[must_use]
+#[cfg(feature = "noncanonical")]
+pub fn ships_as_slice() -> &'static [&'static str] {
+    use std::sync::OnceLock;
+    static ALL_SHIPS: OnceLock<Vec<&'static str>> = OnceLock::new();
+    ALL_SHIPS.get_or_init(|| {
+        let mut v = Vec::with_capacity(CANONICAL_SHIPS.len() + NONCANONICAL_SHIPS.len());
+        v.extend_from_slice(CANONICAL_SHIPS);
+        v.extend_from_slice(NONCANONICAL_SHIPS);
+        v
+    })
+}
+
+/// Return all ship names as a vector of strings. Will allocate.
+///
+/// # Examples
+///
+/// ```
+/// let all_ships = gsv_culture_ships::ships();
+/// assert_eq!(all_ships.len(), gsv_culture_ships::count());
+/// ```
+#[must_use]
+pub fn ships() -> Vec<String> {
+    ships_as_slice().iter().map(|s| s.to_string()).collect()
 }
 
 /// Return a randomly-selected ship name.
@@ -231,8 +266,8 @@ pub fn random() -> String {
 /// ```
 #[must_use]
 pub fn random_str() -> &'static str {
-    let index = fastrand::usize(..SHIPS.len());
-    SHIPS[index]
+    let ships = ships_as_slice();
+    ships[fastrand::usize(..ships.len())]
 }
 
 /// Return multiple randomly-selected unique ship names.
@@ -246,21 +281,29 @@ pub fn random_str() -> &'static str {
 /// ```
 #[must_use]
 pub fn random_n(count: usize) -> Vec<String> {
-    let count = count.min(SHIPS.len());
-    let mut indices = (0..SHIPS.len()).collect::<Vec<_>>();
+    let all = ships_as_slice();
+    let count = count.min(all.len());
+    let mut indices = (0..all.len()).collect::<Vec<_>>();
     fastrand::shuffle(&mut indices);
-    indices.into_iter().take(count).map(|i| SHIPS[i].to_string()).collect()
+    indices.into_iter().take(count).map(|i| all[i].to_string()).collect()
 }
 
 /// Returns the total number of available ship names.
 ///
 /// ```
 /// let count = gsv_culture_ships::count();
-/// assert_eq!(count, 172);
+/// assert!(count >= 172);
 /// ```
 #[must_use]
 pub const fn count() -> usize {
-    SHIPS.len()
+    #[cfg(not(feature = "noncanonical"))]
+    {
+        CANONICAL_SHIPS.len()
+    }
+    #[cfg(feature = "noncanonical")]
+    {
+        CANONICAL_SHIPS.len() + NONCANONICAL_SHIPS.len()
+    }
 }
 
 #[cfg(test)]
@@ -275,7 +318,7 @@ mod tests {
     #[test]
     fn all_ships() {
         let list = super::ships();
-        assert_eq!(list.len(), super::SHIPS.len());
+        assert_eq!(list.len(), super::count());
     }
 
     #[test]
@@ -287,14 +330,13 @@ mod tests {
     #[test]
     fn all_ships_borrowed() {
         let list: &'static [&str] = super::ships_as_slice();
-        assert_eq!(list.len(), super::SHIPS.len());
+        assert_eq!(list.len(), super::count());
     }
 
     #[test]
     fn random_multiple() {
         let ships = super::random_n(5);
         assert!(ships.len() <= 5);
-        // Check uniqueness
         let unique: std::collections::HashSet<_> = ships.iter().collect();
         assert_eq!(unique.len(), ships.len());
     }
@@ -302,12 +344,29 @@ mod tests {
     #[test]
     fn random_n_exceeds_total() {
         let ships = super::random_n(1000);
-        assert_eq!(ships.len(), super::SHIPS.len());
+        assert_eq!(ships.len(), super::count());
     }
 
     #[test]
     fn count_ships() {
+        assert_eq!(super::count(), super::ships_as_slice().len());
+    }
+
+    #[cfg(not(feature = "noncanonical"))]
+    #[test]
+    fn default_has_canonical_only() {
         assert_eq!(super::count(), 172);
-        assert_eq!(super::count(), super::SHIPS.len());
+    }
+
+    #[cfg(feature = "noncanonical")]
+    #[test]
+    fn noncanonical_includes_extras() {
+        assert_eq!(super::count(), 177);
+        let all = super::ships_as_slice();
+        assert!(all.contains(&"GSV You're Absolutely Right!"));
+        assert!(all.contains(&"(D)ROU I See My Mistake Now"));
+        assert!(all.contains(&"GCU I Hope This Helps"));
+        assert!(all.contains(&"LCU Now I Have All The Information I Need"));
+        assert!(all.contains(&"ROU You Caught Me I Was Hedging"));
     }
 }

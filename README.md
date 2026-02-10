@@ -16,6 +16,8 @@ If you are using the cli bin:
 GSV Unreliable Witness
 ```
 
+The `noncanonical` crate feature adds 5 ship names that are funny at the start of 2026, when AI is not, shall we say, at the Culture's level. They are, however, non-canonical, so by default they are not included.
+
 ## See also
 
 [Javascript](https://github.com/ceejbot/culture-ships) and [golang](https://github.com/ceejbot/vfp-culture-ships) variations.
