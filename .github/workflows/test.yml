@@ -13,32 +13,30 @@ on:
 
 env:
     CARGO_TERM_COLOR: always
+    SCCACHE_GHA_ENABLED: "true"
+    RUSTC_WRAPPER: "sccache"
 
 jobs:
     test:
         name: test
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - name: checkout
+              uses: actions/checkout@v6
 
-            - name: get stable + nightly Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
+            - name: sccache-cache
+              uses: mozilla-actions/sccache-action@9e7fa8a12102821edf02ca5dbea1acd0f89a2696
+
+            - name: Install Rust toolchain
+              uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6
               with:
-                  toolchain: nightly, stable
-                  target: x86_64-unknown-linux-gnu
-                  components: clippy, rustfmt
+                  toolchain: ${{ matrix.rust }}
                   cache-directories: |
                       ~/.cargo/registry
                       ~/.cargo/bin
                       target
 
-            - name: consult Clippy
-              run: cargo +stable clippy --all-targets
-
-            - name: check formatting
-              run: cargo +nightly fmt --check --all
-
-            - name: get cargo-nextest on path
+            - name: Install cargo-nextest
               shell: bash
               run: |
                   if [[ -z $(which cargo-nextest) ]]; then
@@ -48,4 +46,7 @@ jobs:
                   fi
 
             - name: run the tests
-              run: cargo nextest run
+              run: cargo nextest run --all-targets --all-features --future-incompat-report
+
+            - name: consult Clippy
+              run: cargo clippy --all-targets --all-features
