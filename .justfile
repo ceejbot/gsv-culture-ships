@@ -7,12 +7,10 @@ _help:
 # Run all tests using nextest.
 test:
     cargo nextest run
-    cargo nextest run --features noncanonical
 
 # Run the same checks we run in CI. Requires nightly.
 ci: test
     cargo clippy
-    cargo clippy --features noncanonical
     cargo +nightly fmt --check
 
 # Format and fix lints.

@@ -2,8 +2,6 @@
 //! pleasingly extensive [Wikipedia article](https://en.wikipedia.org/wiki/List_of_spacecraft_in_the_Culture_series)
 //! listing them.
 //!
-//! Enable the `noncanonical` feature to include a handful of fun additions to the canonical list.
-//!
 //! # Examples
 //!
 //! ```
@@ -186,15 +184,6 @@ const CANONICAL_SHIPS: &[&str] = &[
     "VFP/(D)ROU You'll Clean That Up Before You Leave",
 ];
 
-#[cfg(feature = "noncanonical")]
-const NONCANONICAL_SHIPS: &[&str] = &[
-    "GSV You're Absolutely Right!",
-    "(D)ROU I See My Mistake Now",
-    "GCU I Hope This Helps",
-    "LCU Now I Have All The Information I Need",
-    "ROU You Caught Me I Was Hedging",
-];
-
 /// Return all ship names as a slice of &str. Will not allocate.
 ///
 /// # Examples
@@ -204,32 +193,8 @@ const NONCANONICAL_SHIPS: &[&str] = &[
 /// assert!(ships.contains(&"GSV Zero Gravitas"));
 /// ```
 #[must_use]
-#[cfg(not(feature = "noncanonical"))]
 pub const fn ships_as_slice() -> &'static [&'static str] {
     CANONICAL_SHIPS
-}
-
-/// Return all ship names as a slice of &str, including noncanonical names.
-///
-/// The combined slice is built once on first call and cached for the lifetime of the process.
-///
-/// # Examples
-///
-/// ```
-/// let ships = gsv_culture_ships::ships_as_slice();
-/// assert!(ships.contains(&"GSV Zero Gravitas"));
-/// ```
-#[must_use]
-#[cfg(feature = "noncanonical")]
-pub fn ships_as_slice() -> &'static [&'static str] {
-    use std::sync::OnceLock;
-    static ALL_SHIPS: OnceLock<Vec<&'static str>> = OnceLock::new();
-    ALL_SHIPS.get_or_init(|| {
-        let mut v = Vec::with_capacity(CANONICAL_SHIPS.len() + NONCANONICAL_SHIPS.len());
-        v.extend_from_slice(CANONICAL_SHIPS);
-        v.extend_from_slice(NONCANONICAL_SHIPS);
-        v
-    })
 }
 
 /// Return all ship names as a vector of strings. Will allocate.
@@ -296,14 +261,7 @@ pub fn random_n(count: usize) -> Vec<String> {
 /// ```
 #[must_use]
 pub const fn count() -> usize {
-    #[cfg(not(feature = "noncanonical"))]
-    {
-        CANONICAL_SHIPS.len()
-    }
-    #[cfg(feature = "noncanonical")]
-    {
-        CANONICAL_SHIPS.len() + NONCANONICAL_SHIPS.len()
-    }
+    CANONICAL_SHIPS.len()
 }
 
 #[cfg(test)]
@@ -352,21 +310,8 @@ mod tests {
         assert_eq!(super::count(), super::ships_as_slice().len());
     }
 
-    #[cfg(not(feature = "noncanonical"))]
     #[test]
-    fn default_has_canonical_only() {
+    fn count_is_172() {
         assert_eq!(super::count(), 172);
-    }
-
-    #[cfg(feature = "noncanonical")]
-    #[test]
-    fn noncanonical_includes_extras() {
-        assert_eq!(super::count(), 177);
-        let all = super::ships_as_slice();
-        assert!(all.contains(&"GSV You're Absolutely Right!"));
-        assert!(all.contains(&"(D)ROU I See My Mistake Now"));
-        assert!(all.contains(&"GCU I Hope This Helps"));
-        assert!(all.contains(&"LCU Now I Have All The Information I Need"));
-        assert!(all.contains(&"ROU You Caught Me I Was Hedging"));
     }
 }
